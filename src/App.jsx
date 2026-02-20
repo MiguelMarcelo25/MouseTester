@@ -5,12 +5,14 @@ import StatsPanel from "./components/StatsPanel";
 import Header from "./components/Header";
 import DoubleClickTester from "./components/DoubleClickTester";
 import KeyboardTester from "./components/KeyboardTester";
+import TypingTest from "./components/TypingTest";
 
 const MAX_LOG_ENTRIES = 50;
 const DOUBLE_CLICK_THRESHOLD = 300;
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("mouse"); // 'mouse' | 'doubleclick' | 'keyboard'
+  const [activeTab, setActiveTab] = useState("mouse"); // 'mouse' | 'doubleclick' | 'keyboard' | 'typing'
+  const [resetKey, setResetKey] = useState(0);
 
   // ── Mouse tester state ──
   const [events, setEvents] = useState([]);
@@ -47,7 +49,11 @@ export default function App() {
 
   const handleMouseDown = useCallback(
     (e) => {
-      // Don't intercept clicks on the double-click tab
+      // Always prevent default for side buttons to stop browser navigation
+      if (e.button === 3 || e.button === 4) {
+        e.preventDefault();
+      }
+
       if (activeTab === "doubleclick") return;
       e.preventDefault();
       const button = e.button;
@@ -103,6 +109,11 @@ export default function App() {
 
   const handleMouseUp = useCallback(
     (e) => {
+      // Always prevent default for side buttons to stop browser navigation
+      if (e.button === 3 || e.button === 4) {
+        e.preventDefault();
+      }
+
       if (activeTab === "doubleclick") return;
       const button = e.button;
       if (button === 0) setActiveButtons((prev) => ({ ...prev, left: false }));
@@ -161,6 +172,7 @@ export default function App() {
       scrollDown: 0,
       totalEvents: 0,
     });
+    setResetKey((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
@@ -183,7 +195,7 @@ export default function App() {
     >
       <Header mousePos={mousePos} onClear={clearAll} />
 
-      <main className="max-w-7xl mx-auto px-4 pb-10">
+      <main className="max-w-7xl mx-auto px-4 pt-10 pb-10">
         {/* Tab switcher */}
         <div className="flex gap-2 mb-6">
           <TabButton
@@ -207,6 +219,13 @@ export default function App() {
             onClick={() => setActiveTab("keyboard")}
             accent="#10b981"
           />
+          <TabButton
+            id="tab-typing"
+            label="⌨️ Typing Test"
+            active={activeTab === "typing"}
+            onClick={() => setActiveTab("typing")}
+            accent="#f59e0b"
+          />
         </div>
 
         {/* Tab content */}
@@ -226,11 +245,12 @@ export default function App() {
           </div>
         )}
         {activeTab === "doubleclick" && (
-          <div className="max-w-2xl mx-auto">
-            <DoubleClickTester />
+          <div className="max-w-5xl mx-auto">
+            <DoubleClickTester key={resetKey} />
           </div>
         )}
-        {activeTab === "keyboard" && <KeyboardTester />}
+        {activeTab === "keyboard" && <KeyboardTester key={resetKey} />}
+        {activeTab === "typing" && <TypingTest key={resetKey} />}
       </main>
     </div>
   );

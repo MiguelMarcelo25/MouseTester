@@ -226,15 +226,22 @@ export default function KeyboardTester() {
     });
   }, []);
 
+  // Clear stuck keys if window loses focus (common with Win key)
+  const handleBlur = useCallback(() => {
+    setPressedKeys(new Set());
+  }, []);
+
   useEffect(() => {
-    if (subTab !== "tester") return; // don't intercept keys on typing tab
+    if (subTab !== "tester") return;
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
     };
-  }, [handleKeyDown, handleKeyUp, subTab]);
+  }, [handleKeyDown, handleKeyUp, handleBlur, subTab]);
 
   const reset = useCallback(() => {
     setPressedKeys(new Set());

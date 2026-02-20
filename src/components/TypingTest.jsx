@@ -1,68 +1,244 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
-// ── Sentence pool grouped by approximate word count ───────────────────────────
-const SENTENCES = {
-  10: [
-    "the quick brown fox jumps over the lazy dog",
-    "she sells sea shells by the sea shore",
-    "all good things must come to an end",
-    "a journey of a thousand miles begins with one step",
-    "every cloud has a silver lining inside it",
-    "actions speak louder than words ever could",
-    "practice makes perfect no matter what you do",
-    "time flies when you are having fun today",
-    "do not judge a book by its cover",
-    "an apple a day keeps the doctor away",
-  ],
-  15: [
-    "the best way to predict the future is to create it yourself",
-    "you miss one hundred percent of the shots you do not take",
-    "in the middle of every difficulty lies a great opportunity for growth",
-    "it does not matter how slowly you go as long as you do not stop",
-    "success is not final and failure is not fatal it is the courage to continue",
-    "the only way to do great work is to love what you do each day",
-    "life is what happens to you while you are busy making other plans for yourself",
-    "the greatest glory in living lies not in never falling but in rising every time",
-    "your time is limited so do not waste it living someone else life instead",
-    "the future belongs to those who believe in the beauty of their own dreams today",
-  ],
-  30: [
-    "the quick brown fox jumps over the lazy dog near the river bank on a warm and sunny afternoon in the middle of summer",
-    "she opened the old wooden door and stepped into a room filled with warm golden light that made her feel safe and welcome at home",
-    "learning to type faster takes daily practice and a strong desire to improve your skills over time so never give up on yourself",
-    "the stars above the quiet mountain village glowed brightly on the cold and clear winter night while everyone was asleep inside",
-    "he packed his bags early in the morning and set off on a long journey across the country to see his family again",
-    "every morning she would sit by the window drink her coffee and watch the world slowly wake up before starting her busy day",
-    "writing clean and readable code is one of the most important skills any software developer can have and it takes years to master",
-    "the children played in the park all afternoon laughing and chasing each other through the green grass while their parents watched nearby",
-    "technology has changed the way people communicate work and spend their free time over the past two decades in ways nobody expected",
-    "the old clock on the wall ticked steadily as the afternoon sun cast long shadows across the floor of the quiet empty room",
-  ],
-  40: [
-    "the quick brown fox jumps over the lazy dog near the river bank on a warm and sunny afternoon in the middle of summer while the birds sing loudly in the tall trees above and a gentle breeze moves through the long green grass",
-    "she opened the old wooden door and stepped into a room filled with warm golden light that made her feel safe and welcome and right away she knew that this was the place she had been searching for her entire life",
-    "learning to type faster takes daily practice patience and a strong desire to improve your skills over time and if you commit to practicing every single day you will be amazed at how much progress you can make in just a few weeks",
-    "the stars above the quiet mountain village glowed brightly on the cold and clear winter night while everyone was asleep inside their homes dreaming of warmer days and the first green signs of spring that would soon come to the valley",
-    "he packed his bags early in the morning and set off on a long journey across the country to see his family again after being away for more than three years working in a city far from the place where he grew up",
-    "every morning she would sit by the window drink her coffee and watch the world slowly wake up around her before starting her busy day filled with meetings calls and the thousand small decisions that made up the rhythm of her working life",
-    "writing clean and readable code is one of the most important skills any software developer can have and it takes years of practice and careful attention to detail to develop the habits and instincts that make a truly great programmer stand out from the rest",
-    "the children played in the park all afternoon laughing and chasing each other through the green grass while their parents sat nearby on wooden benches talking quietly and watching the sun begin its slow descent toward the horizon at the end of the day",
-    "technology has changed the way people communicate work and spend their free time over the past two decades in ways that nobody could have predicted and the pace of change shows no sign of slowing down as new tools and ideas emerge every single year",
-    "the old clock on the wall ticked steadily as the afternoon sun cast long shadows across the floor of the quiet empty room and outside the window the leaves of the tall oak trees rustled softly in a warm and gentle wind from the south",
-  ],
-};
+const WORD_POOL = [
+  "the",
+  "be",
+  "of",
+  "and",
+  "a",
+  "to",
+  "in",
+  "he",
+  "have",
+  "it",
+  "that",
+  "for",
+  "they",
+  "with",
+  "as",
+  "not",
+  "on",
+  "she",
+  "at",
+  "by",
+  "this",
+  "we",
+  "you",
+  "do",
+  "but",
+  "from",
+  "or",
+  "which",
+  "one",
+  "would",
+  "all",
+  "will",
+  "there",
+  "say",
+  "who",
+  "make",
+  "when",
+  "can",
+  "more",
+  "if",
+  "no",
+  "man",
+  "out",
+  "other",
+  "so",
+  "what",
+  "time",
+  "up",
+  "go",
+  "about",
+  "than",
+  "into",
+  "could",
+  "state",
+  "only",
+  "new",
+  "year",
+  "some",
+  "take",
+  "come",
+  "these",
+  "know",
+  "see",
+  "use",
+  "get",
+  "like",
+  "then",
+  "first",
+  "any",
+  "work",
+  "now",
+  "may",
+  "such",
+  "give",
+  "over",
+  "think",
+  "most",
+  "even",
+  "find",
+  "day",
+  "also",
+  "after",
+  "way",
+  "many",
+  "must",
+  "look",
+  "before",
+  "great",
+  "back",
+  "through",
+  "long",
+  "where",
+  "much",
+  "should",
+  "well",
+  "people",
+  "down",
+  "own",
+  "just",
+  "because",
+  "good",
+  "each",
+  "those",
+  "feel",
+  "seem",
+  "how",
+  "high",
+  "too",
+  "place",
+  "little",
+  "world",
+  "very",
+  "still",
+  "nation",
+  "hand",
+  "old",
+  "life",
+  "tell",
+  "write",
+  "become",
+  "here",
+  "show",
+  "house",
+  "both",
+  "between",
+  "need",
+  "mean",
+  "call",
+  "develop",
+  "under",
+  "last",
+  "right",
+  "move",
+  "thing",
+  "general",
+  "school",
+  "never",
+  "same",
+  "another",
+  "begin",
+  "while",
+  "number",
+  "part",
+  "turn",
+  "real",
+  "leave",
+  "might",
+  "want",
+  "point",
+  "form",
+  "off",
+  "child",
+  "few",
+  "small",
+  "since",
+  "against",
+  "ask",
+  "late",
+  "home",
+  "interest",
+  "large",
+  "person",
+  "end",
+  "open",
+  "public",
+  "follow",
+  "during",
+  "present",
+  "without",
+  "again",
+  "hold",
+  "govern",
+  "around",
+  "possible",
+  "head",
+  "consider",
+  "word",
+  "program",
+  "problem",
+  "however",
+  "lea",
+  "system",
+  "set",
+  "order",
+  "eye",
+  "plan",
+  "run",
+  "keep",
+  "face",
+  "fact",
+  "group",
+  "play",
+  "stand",
+  "increase",
+  "early",
+  "course",
+  "change",
+  "help",
+  "line",
+];
 
-function pickWords(n) {
-  const bucket = SENTENCES[n] ?? SENTENCES[30];
-  const sentence = bucket[Math.floor(Math.random() * bucket.length)];
-  return sentence.split(" ");
+function pickWords(count, withPunc, withCaps) {
+  const words = [];
+  for (let i = 0; i < count; i++) {
+    let word = WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)];
+
+    // Random Capitalization
+    if (withCaps && Math.random() < 0.2) {
+      word = word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    // Random Punctuation (never on first word, force on last word if punc is on)
+    if (withPunc) {
+      if (i === count - 1) {
+        word += ".";
+      } else if (i > 0 && Math.random() < 0.1) {
+        word += Math.random() < 0.5 ? "," : ".";
+      }
+    }
+
+    words.push(word);
+  }
+
+  // Format consistent casing if caps is OFF (just in case pool has mixed)
+  if (!withCaps) {
+    return words.map((w) => w.toLowerCase());
+  }
+
+  return words;
 }
 
 const WORD_OPTIONS = [10, 15, 30, 40];
 
 export default function TypingTest() {
   const [wordCount, setWordCount] = useState(30);
-  const [words, setWords] = useState(() => pickWords(30));
+  const [usePunctuation, setUsePunctuation] = useState(false);
+  const [useCapitals, setUseCapitals] = useState(false);
+  const [words, setWords] = useState(() => pickWords(30, false, false));
   const [input, setInput] = useState("");
   const [status, setStatus] = useState("idle"); // idle | running | done
   const [elapsed, setElapsed] = useState(0);
@@ -159,27 +335,10 @@ export default function TypingTest() {
     [words],
   );
 
-  // ── Change word count ─────────────────────────────────────────────────────
-  const changeWordCount = useCallback((n) => {
-    clearInterval(timerRef.current);
-    setWordCount(n);
-    setWords(pickWords(n));
-    setInput("");
-    setStatus("idle");
-    setElapsed(0);
-    setLiveWpm(0);
-    setWpmHistory([]);
-    setFinalStats(null);
-    startRef.current = null;
-    lastSecRef.current = 0;
-    if (wordsRef.current) wordsRef.current.scrollTop = 0;
-    setTimeout(() => textareaRef.current?.focus(), 50);
-  }, []);
-
   // ── Restart (same word count) ─────────────────────────────────────────────
   const restart = useCallback(() => {
     clearInterval(timerRef.current);
-    setWords(pickWords(wordCount));
+    setWords(pickWords(wordCount, usePunctuation, useCapitals));
     setInput("");
     setStatus("idle");
     setElapsed(0);
@@ -190,7 +349,19 @@ export default function TypingTest() {
     lastSecRef.current = 0;
     if (wordsRef.current) wordsRef.current.scrollTop = 0;
     setTimeout(() => textareaRef.current?.focus(), 50);
-  }, [wordCount]);
+  }, [wordCount, usePunctuation, useCapitals]);
+
+  // ── Change word count ─────────────────────────────────────────────────────
+  const changeWordCount = useCallback((n) => setWordCount(n), []);
+
+  // ── Toggle settings (Caps/Punc) ──────────────────────────────────────────
+  const togglePunctuation = useCallback(() => setUsePunctuation((p) => !p), []);
+  const toggleCapitals = useCallback(() => setUseCapitals((c) => !c), []);
+
+  // ── Auto-restart when settings change ─────────────────────────────────────
+  useEffect(() => {
+    restart();
+  }, [restart]);
 
   // ── Input handler ─────────────────────────────────────────────────────────
   const handleChange = useCallback(
@@ -280,47 +451,73 @@ export default function TypingTest() {
       : completedCount / wordCount;
   const progress = Math.min(isDone ? 1 : currentWordProgress, 1);
 
+  // ── Global Shortcut ──
+  useGlobalShortcut(restart);
+
   return (
     <div className="flex flex-col gap-5" style={{ cursor: "text" }}>
-      {/* ── Word count selector ── */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-mono mr-1" style={{ color: "#6366f144" }}>
-          words
-        </span>
-        {WORD_OPTIONS.map((n) => (
-          <button
-            key={n}
-            onClick={() => changeWordCount(n)}
-            className="px-3 py-1 rounded-lg font-mono text-sm transition-all duration-150 hover:scale-105"
-            style={{
-              background:
-                wordCount === n ? "rgba(99,102,241,0.2)" : "transparent",
-              color: wordCount === n ? "#818cf8" : "#475569",
-              border: `1px solid ${wordCount === n ? "rgba(99,102,241,0.4)" : "transparent"}`,
-              fontWeight: wordCount === n ? 700 : 400,
-            }}
-          >
-            {n}
-          </button>
-        ))}
+      {/* ── Settings Bar (MonkeyType style) ── */}
+      <div className="flex items-center justify-between bg-black/20 rounded-xl p-2 px-4 backdrop-blur-sm border border-white/5">
+        <div className="flex items-center gap-6">
+          {/* Settings Group: Punctuation & Caps */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={togglePunctuation}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                usePunctuation
+                  ? "text-indigo-400 bg-indigo-500/10"
+                  : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              <span className="opacity-70">@</span>
+              <span className="hidden sm:inline">punctuation</span>
+            </button>
+            <button
+              onClick={toggleCapitals}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                useCapitals
+                  ? "text-indigo-400 bg-indigo-500/10"
+                  : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              <span className="opacity-70">Aa</span>
+              <span className="hidden sm:inline">caps</span>
+            </button>
+          </div>
 
-        {/* Spacer + timer/WPM */}
-        <div className="flex-1" />
+          <div className="w-px h-4 bg-white/10" />
+
+          {/* Word Count Selector */}
+          <div className="flex items-center gap-1">
+            {WORD_OPTIONS.map((n) => (
+              <button
+                key={n}
+                onClick={() => changeWordCount(n)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                  wordCount === n
+                    ? "text-indigo-400"
+                    : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+            <span className="text-xs text-slate-600 ml-1 font-mono">words</span>
+          </div>
+        </div>
+
+        {/* Timer / WPM Display */}
         <div className="flex items-center gap-4">
           {isRunning && (
-            <span
-              className="font-mono text-sm tabular-nums"
-              style={{ color: "#6366f166" }}
-            >
-              {liveWpm} wpm
-            </span>
+            <div className="text-2xl font-black text-indigo-500 leading-none">
+              {liveWpm}
+            </div>
           )}
-          <span
-            className="font-mono font-bold text-xl tabular-nums"
-            style={{ color: isRunning ? "#6366f1" : "#6366f133", minWidth: 36 }}
-          >
-            {elapsed}s
-          </span>
+          {!isRunning && status === "idle" && (
+            <div className="text-xs text-slate-600 font-mono">
+              start typing...
+            </div>
+          )}
         </div>
       </div>
 
@@ -523,9 +720,9 @@ export default function TypingTest() {
         </div>
       )}
 
-      {/* ── Result card ── */}
+      {/* ── Result Modal (on top of everything) ── */}
       {isDone && finalStats && (
-        <ResultCard
+        <ResultModal
           stats={finalStats}
           wpmHistory={wpmHistory}
           wordCount={wordCount}
@@ -572,35 +769,113 @@ export default function TypingTest() {
 }
 
 // ── Result card ───────────────────────────────────────────────────────────────
-function ResultCard({ stats, wpmHistory, wordCount, onRestart }) {
+// ── Global Shortcut Hook ────────────────────────────────────────────────────
+function useGlobalShortcut(onRestart) {
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        onRestart();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onRestart]);
+}
+
+// ── Result Modal ──────────────────────────────────────────────────────────────
+function ResultModal({ stats, wpmHistory, wordCount, onRestart }) {
   const { netWpm, rawWpm, acc, correct, wrong, elapsed } = stats;
-  const maxWpm = Math.max(...wpmHistory.map((p) => p.wpm), 1);
+  // Calculate max WPM for scaling, with a minimum of 10 to avoid flat lines
+  const maxWpm = Math.max(...wpmHistory.map((p) => p.wpm), 10);
+  const chartHeight = 120;
+  const chartWidth = 500;
+
+  // Generate points for the graph
+  const points = wpmHistory
+    .map((p, i) => {
+      const x = (i / (wpmHistory.length - 1 || 1)) * chartWidth;
+      const y = chartHeight - (p.wpm / maxWpm) * chartHeight;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  // Generate grid lines
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+    const y = chartHeight * ratio;
+    const val = Math.round(maxWpm * (1 - ratio));
+    return (
+      <g key={ratio}>
+        <line
+          x1="0"
+          y1={y}
+          x2={chartWidth}
+          y2={y}
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth="1"
+        />
+        <text
+          x="-10"
+          y={y + 3}
+          textAnchor="end"
+          fontSize="10"
+          fill="rgba(255,255,255,0.3)"
+          fontFamily="monospace"
+        >
+          {val}
+        </text>
+      </g>
+    );
+  });
 
   return (
-    <div
-      className="animate-fade-in-up flex flex-col gap-5 rounded-2xl p-6"
-      style={{
-        background: "rgba(99,102,241,0.06)",
-        border: "1px solid rgba(99,102,241,0.18)",
-      }}
-    >
-      {/* Stats row */}
-      <div className="flex items-end gap-10 flex-wrap">
-        <div>
-          <div
-            className="text-xs font-mono uppercase tracking-widest mb-1"
-            style={{ color: "#6366f166" }}
-          >
-            wpm
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/40 animate-fade-in">
+      <div
+        className="relative w-full max-w-2xl bg-[#0f172a] rounded-2xl border border-indigo-500/20 shadow-2xl overflow-hidden p-8 flex flex-col gap-8 animate-scale-in"
+        style={{ boxShadow: "0 0 50px rgba(99,102,241,0.15)" }}
+      >
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-2xl font-bold text-white">Test Complete</h2>
+            <div
+              className="inline-block px-3 py-1 rounded-full text-xs font-bold w-fit"
+              style={{
+                background:
+                  netWpm >= 80
+                    ? "rgba(16,185,129,0.15)"
+                    : netWpm >= 60
+                      ? "rgba(245,158,11,0.15)"
+                      : "rgba(99,102,241,0.15)",
+                color:
+                  netWpm >= 80
+                    ? "#34d399"
+                    : netWpm >= 60
+                      ? "#fbbf24"
+                      : "#818cf8",
+              }}
+            >
+              {netWpm >= 100
+                ? "🚀 Expert"
+                : netWpm >= 80
+                  ? "⚡ Fast"
+                  : netWpm >= 60
+                    ? "✅ Good"
+                    : "📈 Keep Going"}
+            </div>
           </div>
-          <div
-            className="text-7xl font-black font-mono leading-none"
-            style={{ color: "#e2e8f0" }}
-          >
-            {netWpm}
+
+          <div className="text-right">
+            <div className="text-xs font-mono uppercase tracking-widest text-indigo-400/50 mb-1">
+              net wpm
+            </div>
+            <div className="text-6xl font-black font-mono text-indigo-100 leading-none">
+              {netWpm}
+            </div>
           </div>
         </div>
-        <div className="flex gap-8 pb-2 flex-wrap">
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-5 gap-4">
           <Stat label="raw" value={rawWpm} />
           <Stat
             label="acc"
@@ -614,115 +889,69 @@ function ResultCard({ stats, wpmHistory, wordCount, onRestart }) {
             color={wrong > 0 ? "#f87171" : "#4b5563"}
           />
           <Stat label="time" value={`${elapsed}s`} />
-          <Stat label="words" value={wordCount} />
         </div>
-      </div>
 
-      {/* WPM sparkline */}
-      {wpmHistory.length > 1 && (
-        <div>
-          <div
-            className="text-xs font-mono mb-2"
-            style={{ color: "#6366f144" }}
-          >
-            wpm history
+        {/* Graph */}
+        {wpmHistory.length > 1 && (
+          <div className="pl-6 pt-2">
+            <div className="text-xs font-mono mb-2 text-indigo-400/40">
+              wpm history
+            </div>
+            <svg
+              width="100%"
+              height={chartHeight}
+              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+              style={{ overflow: "visible" }}
+            >
+              {gridLines}
+              <defs>
+                <linearGradient id="wpmFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <polygon
+                points={`0,${chartHeight} ${points} ${chartWidth},${chartHeight}`}
+                fill="url(#wpmFill)"
+              />
+              <polyline
+                points={points}
+                fill="none"
+                stroke="#6366f1"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              {/* Dots for each point */}
+              {wpmHistory.map((p, i) => {
+                const x = (i / (wpmHistory.length - 1 || 1)) * chartWidth;
+                const y = chartHeight - (p.wpm / maxWpm) * chartHeight;
+                return <circle key={i} cx={x} cy={y} r="1.5" fill="#818cf8" />;
+              })}
+            </svg>
           </div>
-          <svg
-            width="100%"
-            height="64"
-            style={{ overflow: "visible" }}
-            viewBox={`0 0 ${wpmHistory.length} 64`}
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="wpmFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {(() => {
-              const pts = wpmHistory.map(
-                (p, i) => `${i},${64 - (p.wpm / maxWpm) * 58}`,
-              );
-              return (
-                <>
-                  <polygon
-                    points={`0,64 ${pts.join(" ")} ${wpmHistory.length - 1},64`}
-                    fill="url(#wpmFill)"
-                  />
-                  <polyline
-                    points={pts.join(" ")}
-                    fill="none"
-                    stroke="#6366f1"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                  {wpmHistory.map((p, i) => (
-                    <circle
-                      key={i}
-                      cx={i}
-                      cy={64 - (p.wpm / maxWpm) * 58}
-                      r="1.2"
-                      fill="#818cf8"
-                    />
-                  ))}
-                </>
-              );
-            })()}
-          </svg>
-        </div>
-      )}
+        )}
 
-      {/* Actions */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div
-          className="inline-block px-4 py-1.5 rounded-full text-sm font-bold"
-          style={{
-            background:
-              netWpm >= 80
-                ? "rgba(16,185,129,0.12)"
-                : netWpm >= 60
-                  ? "rgba(245,158,11,0.12)"
-                  : "rgba(99,102,241,0.12)",
-            border: `1px solid ${netWpm >= 80 ? "rgba(16,185,129,0.35)" : netWpm >= 60 ? "rgba(245,158,11,0.35)" : "rgba(99,102,241,0.35)"}`,
-            color:
-              netWpm >= 80 ? "#34d399" : netWpm >= 60 ? "#fbbf24" : "#818cf8",
-          }}
-        >
-          {netWpm >= 100
-            ? "🚀 Expert"
-            : netWpm >= 80
-              ? "⚡ Fast"
-              : netWpm >= 60
-                ? "✅ Good"
-                : netWpm >= 40
-                  ? "📈 Average"
-                  : "🐢 Keep Going"}
-        </div>
-        <button
-          onClick={onRestart}
-          className="px-5 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.03] btn-press"
-          style={{
-            background: "rgba(99,102,241,0.12)",
-            border: "1px solid rgba(99,102,241,0.28)",
-            color: "#818cf8",
-          }}
-        >
-          🔄 Try Again
-        </button>
-        <span className="text-xs font-mono" style={{ color: "#6366f133" }}>
-          <kbd
-            style={{
-              padding: "1px 4px",
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              fontSize: 10,
-            }}
+        {/* Action Bar */}
+        <div className="flex items-center justify-center gap-4 mt-2">
+          <button
+            onClick={onRestart}
+            className="group relative px-6 py-3 rounded-xl font-bold text-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 hover:scale-105 active:scale-95 transition-all duration-200 outline-none focus:ring-2 focus:ring-indigo-500/50"
+            autoFocus
           >
-            Ctrl+Enter
-          </kbd>
-        </span>
+            <span>🔄 Try Again</span>
+            <div className="absolute inset-0 rounded-xl ring-1 ring-white/10 group-hover:ring-white/20" />
+          </button>
+          <div className="flex items-center gap-1.5 text-xs font-mono text-indigo-400/40">
+            press{" "}
+            <kbd className="px-1.5 py-0.5 roundedElement bg-white/5 border border-white/10 text-indigo-300/60">
+              Ctrl
+            </kbd>{" "}
+            +{" "}
+            <kbd className="px-1.5 py-0.5 roundedElement bg-white/5 border border-white/10 text-indigo-300/60">
+              Enter
+            </kbd>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -730,14 +959,11 @@ function ResultCard({ stats, wpmHistory, wordCount, onRestart }) {
 
 function Stat({ label, value, color = "#64748b" }) {
   return (
-    <div>
-      <div
-        className="text-xs font-mono uppercase tracking-widest mb-0.5"
-        style={{ color: "#6366f155" }}
-      >
+    <div className="bg-white/5 rounded-lg p-3 border border-white/5 flex flex-col items-center">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-indigo-300/40 mb-1">
         {label}
       </div>
-      <div className="text-2xl font-bold font-mono" style={{ color }}>
+      <div className="text-xl font-bold font-mono" style={{ color }}>
         {value}
       </div>
     </div>
